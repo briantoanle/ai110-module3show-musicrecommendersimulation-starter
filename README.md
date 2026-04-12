@@ -29,6 +29,26 @@ Some prompts to answer:
 
 You can include a simple diagram or bullet list if helpful.
 
+### Answer:
+
+Real world music recommenders are much more complex. 
+- They use collaborative filtering, think "if user A and user B have similar taste, and user A likes song X, then user B might like song X". 
+- They also use natural language processing, Spotify crawls the web, reading blogs, news, social media posts to and look for adjectives to form a "word cloud" or vector for every song based on how human talks about it. It helps them understand the "vibe" of a song beyond simple tags. 
+- They could also use audio analysis, analyzing the actual audio signal to extract features like tempo, key, energy, danceability, etc. Like what we have from the CSV in this assignment.
+
+For my personal content-based recommender, we'll focus on the characteristics of the items themselves. It's like a chef who knows you love spicy food and garlic, so they'll cook a dish with both.
+
+- The qualities of the songs like -  energy, tempo, valence, danceability, acousticness - will be turned into vector.
+
+Now that we have the songs in vector space, we also need to represent the user's taste profile in the same vector space. 
+
+We measure the distance between the user's taste profile and each song's vector. The closer the distance, the more likely the user will enjoy the song. We will use Euclidean distance and Cosine similarity to calculate the distance.
+
+Every song will get a Similarity Score, then the algorithn will filter out songs user already heard, sort the remaining songs, then return Top - K results.
+
+With all of those in consideration, in reality, user might care a lot about genre, but not so much about tempo. So we will use a weighted average to calculate the final score.
+
+
 ---
 
 ## Getting Started
@@ -41,6 +61,8 @@ You can include a simple diagram or bullet list if helpful.
    python -m venv .venv
    source .venv/bin/activate      # Mac or Linux
    .venv\Scripts\activate         # Windows
+
+   ```
 
 2. Install dependencies
 
@@ -101,12 +123,11 @@ Write 1 to 2 paragraphs here about what you learned:
 - about how recommenders turn data into predictions
 - about where bias or unfairness could show up in systems like this
 
-
 ---
 
 ## 7. `model_card_template.md`
 
-Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}  
+Combines reflection and model card framing from the Module 3 guidance. :contentReference[oaicite:2]{index=2}
 
 ```markdown
 # 🎧 Model Card - Music Recommender Simulation
@@ -158,6 +179,7 @@ Describe your dataset.
 Where does your recommender work well
 
 You can think about:
+
 - Situations where the top results "felt right"
 - Particular user profiles it served well
 - Simplicity or transparency benefits
@@ -169,6 +191,7 @@ You can think about:
 Where does your recommender struggle
 
 Some prompts:
+
 - Does it ignore some genres or moods
 - Does it treat all users as if they have the same taste shape
 - Is it biased toward high energy or one genre by default
@@ -181,6 +204,7 @@ Some prompts:
 How did you check your system
 
 Examples:
+
 - You tried multiple user profiles and wrote down whether the results matched your expectations
 - You compared your simulation to what a real app like Spotify or YouTube tends to recommend
 - You wrote tests for your scoring logic
@@ -208,4 +232,4 @@ A few sentences about what you learned:
 - What surprised you about how your system behaved
 - How did building this change how you think about real music recommenders
 - Where do you think human judgment still matters, even if the model seems "smart"
-
+```
