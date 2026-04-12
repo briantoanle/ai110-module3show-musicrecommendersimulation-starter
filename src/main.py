@@ -10,13 +10,14 @@ You will implement the functions in recommender.py:
 """
 
 from recommender import load_songs, recommend_songs
+from user_profile import UNIQUE_USER_PROFILE
 
 
 def main() -> None:
     songs = load_songs("data/songs.csv") 
 
-    # Starter example profile
-    user_prefs = {"genre": "pop", "mood": "happy", "energy": 0.8}
+    # Using the unique user profile for comparison
+    user_prefs = UNIQUE_USER_PROFILE
 
     recommendations = recommend_songs(user_prefs, songs, k=5)
 

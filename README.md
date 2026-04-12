@@ -48,6 +48,75 @@ Every song will get a Similarity Score, then the algorithn will filter out songs
 
 With all of those in consideration, in reality, user might care a lot about genre, but not so much about tempo. So we will use a weighted average to calculate the final score.
 
+### Data Flow Diagram
+
+```mermaid
+graph TD
+    subgraph Input ["1. Input Data"]
+        UP["<b>User Preferences</b><br/>(UNIQUE_USER_PROFILE)"]
+        CSV["<b>Song Database</b><br/>(songs.csv)"]
+    end
+
+    subgraph Process ["2. Processing (The Loop)"]
+        Load["<b>load_songs()</b><br/>Parses CSV into song list"]
+        Loop["<b>For each song in list</b>"]
+        
+        subgraph ScoringLogic ["score_song() Logic"]
+            direction TB
+            Genre["Genre Match (+7 pts)"]
+            Mood["Mood Match (+5 pts)"]
+            Energy["Energy Similarity (up to +4 pts)"]
+            Acoustic["Acoustic Match (up to +5 pts)"]
+            Tempo["Tempo Similarity (up to +3 pts)"]
+            Others["Valence/Danceability (up to +4 pts)"]
+        end
+        
+        Calc["Calculate Total Score<br/>& Explanation"]
+        Store["Store (Song, Score, Explanation)"]
+    end
+
+    subgraph Output ["3. Output (Ranking)"]
+        Sort["<b>Sort List</b><br/>(Descending by Score)"]
+        TopK["<b>Top K Recommendations</b><br/>(e.g., Top 5 Songs)"]
+    end
+
+    %% Connections
+    UP --> Loop
+    CSV --> Load
+    Load --> Loop
+    
+    Loop --> Genre
+    Genre --> Mood
+    Mood --> Energy
+    Energy --> Acoustic
+    Acoustic --> Tempo
+    Tempo --> Others
+    Others --> Calc
+    
+    Calc --> Store
+    Store -- "Repeat for all songs" --> Loop
+    Store --> Sort
+    Sort --> TopK
+```
+
+### 1. What data are we using?
+- **Song Data**: We extract features from `songs.csv`, including categorical data (Genre, Mood) and numerical data (Energy, Tempo, Valence, etc.).
+- **User Profile**: We store your "target" values for these features (e.g., your ideal tempo is 120 BPM, your favorite genre is "Lo-fi").
+
+### 2. How are songs scored?
+The system uses a **Weighted Point Strategy**. Instead of looking for a single perfect match, it awards points for how well a song aligns with your taste across different "dimensions":
+
+| Feature | Max Points | How it works |
+| :--- | :--- | :--- |
+| **Genre** | 7.0 | Exact match to your favorite genre. |
+| **Mood** | 5.0 | Exact match to your favorite mood. |
+| **Energy** | 4.0 | Proximity to your target energy level (0.0 to 1.0). |
+| **Acousticness**| 5.0 | Proximity to target + bonus point for boolean preference match. |
+| **Tempo** | 3.0 | Similarity to your target BPM (within a 60 BPM range). |
+| **Valence/Dance**| 4.0 | Proximity to your target happiness and danceability levels. |
+
+### 3. How do we choose recommendations?
+After iterating through the entire catalog and scoring every individual song, the system **sorts** the results from highest to lowest score. It returns the **Top K** (defaulting to 5) songs that most closely align with your profile.
 
 ---
 
