@@ -1,3 +1,4 @@
+import heapq
 from typing import List, Dict, Tuple, Optional
 from dataclasses import dataclass
 
@@ -38,12 +39,11 @@ class Recommender:
     Required by tests/test_recommender.py
     """
     def __init__(self, songs: List[Song]):
+        """Initializes the recommender with a list of Song objects."""
         self.songs = songs
 
     def recommend(self, user: UserProfile, k: int = 5) -> List[Song]:
-        """
-        Generates list of song recommendations using the score_song function logic.
-        """
+        """Generates top-k song recommendations for a given user profile."""
         # Convert dataclass to dict to reuse functional score_song logic
         user_dict = {
             "favorite_genre": user.favorite_genre,
@@ -56,21 +56,17 @@ class Recommender:
             "target_acousticness": user.target_acousticness
         }
 
-        scored = []
-        for s in self.songs:
-            # Convert Song dataclass to dict
-            s_dict = vars(s)
-            score, explanation = score_song(user_dict, s_dict)
-            scored.append((s, score))
-
-        # Sort by score descending
-        scored.sort(key=lambda x: x[1], reverse=True)
-        return [item[0] for item in scored[:k]]
+        # Pythonic Top-K calculation using heapq
+        scored = heapq.nlargest(
+            k,
+            [(s, score_song(user_dict, vars(s))[0]) for s in self.songs],
+            key=lambda x: x[1]
+        )
+        
+        return [s for s, score in scored]
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
-        """
-        Provides a detailed explanation for why a song was recommended.
-        """
+        """Explains the recommendation score for a specific song and user."""
         user_dict = {
             "favorite_genre": user.favorite_genre,
             "favorite_mood": user.favorite_mood,
@@ -87,12 +83,9 @@ class Recommender:
 
 import csv
 
-def load_songs(csv_path: str) -> List[Dict]:
-    """
-    Loads songs from a CSV file.
-    Required by src/main.py
-    """
-    songs = []
+def load_songs(csv_path: str) -> Dict[int, Dict]:
+    """Loads songs from a CSV file into a dictionary keyed by song ID."""
+    songs = {}
     try:
         with open(csv_path, mode='r', encoding='utf-8') as f:
             reader = csv.DictReader(f)
@@ -110,7 +103,7 @@ def load_songs(csv_path: str) -> List[Dict]:
                     "danceability": float(row["danceability"]),
                     "acousticness": float(row["acousticness"])
                 }
-                songs.append(song)
+                songs[song["id"]] = song
     except FileNotFoundError:
         print(f"Error: Could not find songs file at {csv_path}")
     except Exception as e:
@@ -119,10 +112,7 @@ def load_songs(csv_path: str) -> List[Dict]:
     return songs
 
 def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, str]:
-    """
-    Calculates a similarity score using a point-based weighting system (Strategy C - Balanced).
-    Total potential points: ~27
-    """
+    """Calculates a numerical match score and explanation for a song and user profile."""
     score = 0.0
     reasons = []
 
@@ -186,17 +176,12 @@ def score_song(user_prefs: Dict, song: Dict) -> Tuple[float, str]:
     explanation = "Points earned for: " + ", ".join(reasons) + "." if reasons else "General recommendation."
     return round(score, 2), explanation
 
-def recommend_songs(user_prefs: Dict, songs: List[Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
-    """
-    Functional implementation of the recommendation logic.
-    Required by src/main.py
-    """
-    scored_songs = []
-    for song in songs:
-        score, explanation = score_song(user_prefs, song)
-        scored_songs.append((song, score, explanation))
+def recommend_songs(user_prefs: Dict, songs: Dict[int, Dict], k: int = 5) -> List[Tuple[Dict, float, str]]:
+    """Generates top-k song recommendations using a functional approach."""
+    # Pythonic Top-K calculation using heapq
+    scored_songs = [
+        (song, *score_song(user_prefs, song)) 
+        for song in songs.values()
+    ]
 
-    # Sort by score descending
-    scored_songs.sort(key=lambda x: x[1], reverse=True)
-    
-    return scored_songs[:k]
+    return heapq.nlargest(k, scored_songs, key=lambda x: x[1])
