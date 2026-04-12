@@ -31,22 +31,24 @@ You can include a simple diagram or bullet list if helpful.
 
 ### Answer:
 
-Real world music recommenders are much more complex. 
-- They use collaborative filtering, think "if user A and user B have similar taste, and user A likes song X, then user B might like song X". 
-- They also use natural language processing, Spotify crawls the web, reading blogs, news, social media posts to and look for adjectives to form a "word cloud" or vector for every song based on how human talks about it. It helps them understand the "vibe" of a song beyond simple tags. 
+Real world music recommenders are much more complex.
+
+- They use collaborative filtering, think "if user A and user B have similar taste, and user A likes song X, then user B might like song X".
+- They also use natural language processing, Spotify crawls the web, reading blogs, news, social media posts to and look for adjectives to form a "word cloud" or vector for every song based on how human talks about it. It helps them understand the "vibe" of a song beyond simple tags.
 - They could also use audio analysis, analyzing the actual audio signal to extract features like tempo, key, energy, danceability, etc. Like what we have from the CSV in this assignment.
 
 For my personal content-based recommender, we'll focus on the characteristics of the items themselves. It's like a chef who knows you love spicy food and garlic, so they'll cook a dish with both.
 
-- The qualities of the songs like -  energy, tempo, valence, danceability, acousticness - will be turned into vector.
+- The qualities of the songs like - energy, tempo, valence, danceability, acousticness - will be turned into vector.
 
-Now that we have the songs in vector space, we also need to represent the user's taste profile in the same vector space. 
+Now that we have the songs in vector space, we also need to represent the user's taste profile in the same vector space.
 
 We measure the distance between the user's taste profile and each song's vector. The closer the distance, the more likely the user will enjoy the song. We will use Euclidean distance and Cosine similarity to calculate the distance.
 
 Every song will get a Similarity Score, then the algorithn will filter out songs user already heard, sort the remaining songs, then return Top - K results.
 
 With all of those in consideration, in reality, user might care a lot about genre, but not so much about tempo. So we will use a weighted average to calculate the final score.
+![Phase 3 step 4](image.png)
 
 ### Data Flow Diagram
 
@@ -60,7 +62,7 @@ graph TD
     subgraph Process ["2. Processing (The Loop)"]
         Load["<b>load_songs()</b><br/>Parses CSV into song list"]
         Loop["<b>For each song in list</b>"]
-        
+
         subgraph ScoringLogic ["score_song() Logic"]
             direction TB
             Genre["Genre Match (+7 pts)"]
@@ -70,7 +72,7 @@ graph TD
             Tempo["Tempo Similarity (up to +3 pts)"]
             Others["Valence/Danceability (up to +4 pts)"]
         end
-        
+
         Calc["Calculate Total Score<br/>& Explanation"]
         Store["Store (Song, Score, Explanation)"]
     end
@@ -84,7 +86,7 @@ graph TD
     UP --> Loop
     CSV --> Load
     Load --> Loop
-    
+
     Loop --> Genre
     Genre --> Mood
     Mood --> Energy
@@ -92,7 +94,7 @@ graph TD
     Acoustic --> Tempo
     Tempo --> Others
     Others --> Calc
-    
+
     Calc --> Store
     Store -- "Repeat for all songs" --> Loop
     Store --> Sort
@@ -100,22 +102,25 @@ graph TD
 ```
 
 ### 1. What data are we using?
+
 - **Song Data**: We extract features from `songs.csv`, including categorical data (Genre, Mood) and numerical data (Energy, Tempo, Valence, etc.).
 - **User Profile**: We store your "target" values for these features (e.g., your ideal tempo is 120 BPM, your favorite genre is "Lo-fi").
 
 ### 2. How are songs scored?
+
 The system uses a **Weighted Point Strategy**. Instead of looking for a single perfect match, it awards points for how well a song aligns with your taste across different "dimensions":
 
-| Feature | Max Points | How it works |
-| :--- | :--- | :--- |
-| **Genre** | 7.0 | Exact match to your favorite genre. |
-| **Mood** | 5.0 | Exact match to your favorite mood. |
-| **Energy** | 4.0 | Proximity to your target energy level (0.0 to 1.0). |
-| **Acousticness**| 5.0 | Proximity to target + bonus point for boolean preference match. |
-| **Tempo** | 3.0 | Similarity to your target BPM (within a 60 BPM range). |
-| **Valence/Dance**| 4.0 | Proximity to your target happiness and danceability levels. |
+| Feature           | Max Points | How it works                                                    |
+| :---------------- | :--------- | :-------------------------------------------------------------- |
+| **Genre**         | 7.0        | Exact match to your favorite genre.                             |
+| **Mood**          | 5.0        | Exact match to your favorite mood.                              |
+| **Energy**        | 4.0        | Proximity to your target energy level (0.0 to 1.0).             |
+| **Acousticness**  | 5.0        | Proximity to target + bonus point for boolean preference match. |
+| **Tempo**         | 3.0        | Similarity to your target BPM (within a 60 BPM range).          |
+| **Valence/Dance** | 4.0        | Proximity to your target happiness and danceability levels.     |
 
 ### 3. How do we choose recommendations?
+
 After iterating through the entire catalog and scoring every individual song, the system **sorts** the results from highest to lowest score. It returns the **Top K** (defaulting to 5) songs that most closely align with your profile.
 
 ---
