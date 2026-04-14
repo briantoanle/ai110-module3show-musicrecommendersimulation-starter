@@ -22,9 +22,9 @@ def test_perfect_match():
         "acousticness": 0.6
     }
     score, _ = score_song(user, song)
-    # 7(G) + 5(M) + 4(E) + (4 * (1 - 0.1))(A) + 1(Abool) + 3(T) + 2(V) + 2(D)
-    # 7 + 5 + 4 + 3.6 + 1 + 3 + 2 + 2 = 27.6
-    assert score == 27.6
+    # 3.5(G) + 2.5(M) + 6(E) + (4 * (1 - 0.1))(A) + 4(T) + 3(V) + 3(D)
+    # 3.5 + 2.5 + 6 + 3.6 + 4 + 3 + 3 = 25.6
+    assert score == 25.6
 
 def test_mismatch_penalties():
     user = {
@@ -87,6 +87,6 @@ def test_genre_vs_mood_weighting():
     score_a, _ = score_song(user, song_a)
     score_b, _ = score_song(user, song_b)
     
-    # Song A should score higher because Genre (7) > Mood (5)
+    # Song A should score higher because Genre (3.5) > Mood (2.5)
     assert score_a > score_b
-    assert round(score_a - score_b, 1) == 2.0
+    assert round(score_a - score_b, 1) == 1.0

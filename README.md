@@ -101,6 +101,12 @@ graph TD
     Sort --> TopK
 ```
 
+### 3 profiles test
+
+![alt text](image-1.png)
+![alt text](image-2.png)
+![alt text](image-3.png)
+
 ### 1. What data are we using?
 
 - **Song Data**: We extract features from `songs.csv`, including categorical data (Genre, Mood) and numerical data (Energy, Tempo, Valence, etc.).
@@ -185,6 +191,12 @@ Examples:
 You will go deeper on this in your model card.
 
 ---
+
+### Answer
+
+- User who selects a favorite genre is essentially siloed (or locked) as the genre match weight can override almost all other factors.
+- The system also use exact string matching, which ignores the related sub-genres (indie pop is treated different from pop).
+- The dataset also contains 26% pop, which creates a popularity bias for users who haven't specified a favorite genre.
 
 ## Reflection
 
